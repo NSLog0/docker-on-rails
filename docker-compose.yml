@@ -1,0 +1,45 @@
+version: '2'
+services:
+  nginx:
+    image: nginx
+    volumes_from:
+      - app
+    depends_on:
+      - app
+    ports:
+      - 80:80
+  db:
+    image: mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - ./data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: '<password-here>'
+      MYSQL_DATABASE: '<database-name-here>'
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: foreman start
+    volumes:
+      - ./conf:/etc/nginx/conf.d
+      - ./www:/usr/src/app
+      - ./assets:/app/public/assets/
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+    environment:
+      SECRET_KEY_BASE: '<your-key-here>'
+      APP_DATABASE_PASSWORD: ''
+      MYSQL_SOCKET: '/var/lib/mysql/mysql.sock'
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+volumes:
+  assets:
+    external: false
+  data:
+    external: false
+  nginx_config:
+    external: false
